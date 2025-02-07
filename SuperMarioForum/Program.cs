@@ -1,4 +1,9 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using SuperMarioForum.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<SuperMarioForumContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SuperMarioForumContext") ?? throw new InvalidOperationException("Connection string 'SuperMarioForumContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
