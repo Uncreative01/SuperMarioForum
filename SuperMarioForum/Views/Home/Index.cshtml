@@ -1,8 +1,35 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<SuperMarioForum.Models.Discussion>
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://tcrf.net">building Web apps with ASP.NET Core</a>.</p>
+<h1>Discussion Threads</h1>
+
+<div class="row">
+    @foreach (var discussion in Model)
+    {
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="~/images/@(string.IsNullOrEmpty(discussion.ImageFilename) ? "default.png" : discussion.ImageFilename)"
+                             class="img-fluid rounded-start"
+                             alt="Discussion Image">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a asp-controller="Home" asp-action="GetDiscussion" asp-route-id="@discussion.DiscussionId">
+                                    @discussion.Title
+                                </a>
+                            </h5>
+                            <p class="card-text"><small class="text-muted">@discussion.CreateDate.ToString("g")</small></p>
+                            <p class="card-text"><strong>Comments: </strong>@(discussion.Comments?.Count ?? 0)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
