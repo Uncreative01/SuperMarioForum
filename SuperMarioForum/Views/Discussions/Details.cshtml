@@ -10,32 +10,43 @@
     <h4>Discussion</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Content)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Content)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageFilename)
+
+        <dt class="col-sm-2">
+            Image
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageFilename)
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.ImageFilename))
+            {
+                <img src="~/images/@Model.ImageFilename" alt="Discussion Image" class="img-fluid" style="max-width: 300px; height: auto;" />
+            }
+            else
+            {
+                <p>No image uploaded</p>
+            }
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CreateDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CreateDate)
         </dd>
     </dl>
 </div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.DiscussionId">Edit</a> |
     <a asp-action="Index">Back to List</a>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -50,18 +52,36 @@ namespace SuperMarioForum.Controllers
         }
 
         // POST: Discussions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content,ImageFilename,CreateDate")] Discussion discussion)
+        public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content")] Discussion discussion, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    // Generate a unique filename
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                    // Define the path to save the file
+                    var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", uniqueFileName);
+
+                    // Save the file to wwwroot/images
+                    using (var stream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    // Store only the filename in the database
+                    discussion.ImageFilename = uniqueFileName;
+                }
+
+                discussion.CreateDate = DateTime.Now;
                 _context.Add(discussion);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(discussion);
         }
 
@@ -82,11 +102,9 @@ namespace SuperMarioForum.Controllers
         }
 
         // POST: Discussions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,ImageFilename,CreateDate")] Discussion discussion)
+        public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,ImageFilename,CreateDate")] Discussion discussion, IFormFile imageFile)
         {
             if (id != discussion.DiscussionId)
             {
@@ -97,6 +115,35 @@ namespace SuperMarioForum.Controllers
             {
                 try
                 {
+                    // Handle new image upload
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        // Generate a unique filename
+                        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                        // Define the path to save the file
+                        var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", uniqueFileName);
+
+                        // Save the file
+                        using (var stream = new FileStream(imagePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        // Delete the old image if it exists
+                        if (!string.IsNullOrEmpty(discussion.ImageFilename))
+                        {
+                            var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", discussion.ImageFilename);
+                            if (System.IO.File.Exists(oldImagePath))
+                            {
+                                System.IO.File.Delete(oldImagePath);
+                            }
+                        }
+
+                        // Update the filename
+                        discussion.ImageFilename = uniqueFileName;
+                    }
+
                     _context.Update(discussion);
                     await _context.SaveChangesAsync();
                 }
@@ -142,10 +189,20 @@ namespace SuperMarioForum.Controllers
             var discussion = await _context.Discussion.FindAsync(id);
             if (discussion != null)
             {
+                // Delete the image if it exists
+                if (!string.IsNullOrEmpty(discussion.ImageFilename))
+                {
+                    var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", discussion.ImageFilename);
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                }
+
                 _context.Discussion.Remove(discussion);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
