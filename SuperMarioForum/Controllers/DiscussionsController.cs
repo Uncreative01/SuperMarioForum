@@ -36,7 +36,9 @@ namespace SuperMarioForum.Controllers
             }
 
             var discussion = await _context.Discussion
+                .Include(d => d.Comments) // Include comments when fetching details
                 .FirstOrDefaultAsync(m => m.DiscussionId == id);
+
             if (discussion == null)
             {
                 return NotFound();
@@ -60,19 +62,14 @@ namespace SuperMarioForum.Controllers
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    // Generate a unique filename
                     var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-
-                    // Define the path to save the file
                     var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", uniqueFileName);
 
-                    // Save the file to wwwroot/images
                     using (var stream = new FileStream(imagePath, FileMode.Create))
                     {
                         await imageFile.CopyToAsync(stream);
                     }
 
-                    // Store only the filename in the database
                     discussion.ImageFilename = uniqueFileName;
                 }
 
@@ -115,22 +112,16 @@ namespace SuperMarioForum.Controllers
             {
                 try
                 {
-                    // Handle new image upload
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        // Generate a unique filename
                         var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-
-                        // Define the path to save the file
                         var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", uniqueFileName);
 
-                        // Save the file
                         using (var stream = new FileStream(imagePath, FileMode.Create))
                         {
                             await imageFile.CopyToAsync(stream);
                         }
 
-                        // Delete the old image if it exists
                         if (!string.IsNullOrEmpty(discussion.ImageFilename))
                         {
                             var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", discussion.ImageFilename);
@@ -140,7 +131,6 @@ namespace SuperMarioForum.Controllers
                             }
                         }
 
-                        // Update the filename
                         discussion.ImageFilename = uniqueFileName;
                     }
 
@@ -189,7 +179,6 @@ namespace SuperMarioForum.Controllers
             var discussion = await _context.Discussion.FindAsync(id);
             if (discussion != null)
             {
-                // Delete the image if it exists
                 if (!string.IsNullOrEmpty(discussion.ImageFilename))
                 {
                     var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", discussion.ImageFilename);
