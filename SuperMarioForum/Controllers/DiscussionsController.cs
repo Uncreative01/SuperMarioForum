@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SuperMarioForum.Data;
 using SuperMarioForum.Models;
@@ -36,7 +35,7 @@ namespace SuperMarioForum.Controllers
             }
 
             var discussion = await _context.Discussion
-                .Include(d => d.Comments) // Include comments when fetching details
+                .Include(d => d.Comments)
                 .FirstOrDefaultAsync(m => m.DiscussionId == id);
 
             if (discussion == null)
@@ -56,7 +55,7 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content")] Discussion discussion, IFormFile imageFile)
+        public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content")] Discussion discussion, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
             {
@@ -101,57 +100,97 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,ImageFilename,CreateDate")] Discussion discussion, IFormFile imageFile)
+        public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,CreateDate")] Discussion discussion, IFormFile? imageFile)
         {
             if (id != discussion.DiscussionId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
+                return View(discussion);
+            }
+
+            try
+            {
+                var existingDiscussion = await _context.Discussion.FindAsync(id);
+                if (existingDiscussion == null)
                 {
-                    if (imageFile != null && imageFile.Length > 0)
-                    {
-                        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-                        var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", uniqueFileName);
-
-                        using (var stream = new FileStream(imagePath, FileMode.Create))
-                        {
-                            await imageFile.CopyToAsync(stream);
-                        }
-
-                        if (!string.IsNullOrEmpty(discussion.ImageFilename))
-                        {
-                            var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", discussion.ImageFilename);
-                            if (System.IO.File.Exists(oldImagePath))
-                            {
-                                System.IO.File.Delete(oldImagePath);
-                            }
-                        }
-
-                        discussion.ImageFilename = uniqueFileName;
-                    }
-
-                    _context.Update(discussion);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+
+                Console.WriteLine($"Editing Discussion ID: {id}");
+                Console.WriteLine($"Current Image: {existingDiscussion.ImageFilename}");
+
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+                if (!Directory.Exists(uploadDir))
                 {
-                    if (!DiscussionExists(discussion.DiscussionId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    Directory.CreateDirectory(uploadDir);
                 }
+
+                // Check if a new image was uploaded
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    Console.WriteLine("New image uploaded");
+
+                    // Generate a unique filename for the new image
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                    var newImagePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    // Save the new image
+                    using (var stream = new FileStream(newImagePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+                    Console.WriteLine($"New Image Saved: {newImagePath}");
+
+                    // Delete the old image *after* the new one is saved
+                    if (!string.IsNullOrEmpty(existingDiscussion.ImageFilename))
+                    {
+                        var oldImagePath = Path.Combine(uploadDir, existingDiscussion.ImageFilename);
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                            Console.WriteLine($"Old Image Deleted: {oldImagePath}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Old Image Not Found, skipping deletion");
+                        }
+                    }
+
+                    // Update the discussion with the new image filename
+                    existingDiscussion.ImageFilename = uniqueFileName;
+                }
+                else
+                {
+                    Console.WriteLine("No new image uploaded, keeping the old one.");
+                }
+
+                // Update other discussion properties
+                existingDiscussion.Title = discussion.Title;
+                existingDiscussion.Content = discussion.Content;
+                existingDiscussion.CreateDate = discussion.CreateDate;
+
+                _context.Update(existingDiscussion);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Discussion updated successfully!");
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(discussion);
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error saving changes: " + ex.Message);
+                ModelState.AddModelError("", "Error saving changes: " + ex.Message);
+                return View(discussion);
+            }
         }
+
+
+
+
+
 
         // GET: Discussions/Delete/5
         public async Task<IActionResult> Delete(int? id)

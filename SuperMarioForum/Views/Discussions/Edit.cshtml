@@ -9,7 +9,8 @@
 
 <div class="card p-4 shadow-sm">
     <div class="card-body">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
+
             <input type="hidden" asp-for="DiscussionId" />
 
             <div class="form-group mb-3">
@@ -29,11 +30,12 @@
                 <div>
                     @if (!string.IsNullOrEmpty(Model.ImageFilename))
                     {
-                        <img src="~/images/@Model.ImageFilename" alt="Discussion Image" class="img-fluid rounded mb-3" style="max-width: 300px; height: auto;" />
+                        <p>Current Image:</p>
+                        <img src="~/images/@Model.ImageFilename" alt="Current Image" width="200" />
                     }
                     else
                     {
-                        <p>No image uploaded</p>
+                        <p>No image uploaded.</p>
                     }
                 </div>
             </div>

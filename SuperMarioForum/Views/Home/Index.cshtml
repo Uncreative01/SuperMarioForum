@@ -13,9 +13,12 @@
             <div class="card">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="~/images/@(string.IsNullOrEmpty(discussion.ImageFilename) ? "default.png" : discussion.ImageFilename)"
-                             class="img-fluid rounded-start"
-                             alt="Discussion Image">
+                        @if (!string.IsNullOrEmpty(discussion.ImageFilename))
+                        {
+                            <img src="~/images/@discussion.ImageFilename"
+                                 class="img-fluid rounded-start"
+                                 alt="Discussion Image">
+                        }
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
