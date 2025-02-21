@@ -62,15 +62,9 @@
 
         <hr />
 
-        <!-- Add Comment Form -->
-        <h3>Add a Comment</h3>
-        <form asp-controller="Comments" asp-action="Create" method="post">
-            <input type="hidden" name="DiscussionId" value="@Model.DiscussionId" />
-            <div class="mb-3">
-                <label for="Content" class="form-label fw-bold">Your Comment</label>
-                <textarea name="Content" class="form-control" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Post Comment</button>
-        </form>
+        <!-- Replace Inline Form with Button -->
+        <a asp-controller="Comments" asp-action="Create" asp-route-discussionId="@Model.DiscussionId" class="btn btn-success">
+            Add a Comment
+        </a>
     </div>
 </div>
