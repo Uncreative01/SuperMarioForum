@@ -23,6 +23,7 @@ namespace SuperMarioForum.Controllers
             return View(comment);
         }
 
+
         // POST: Comments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -33,10 +34,11 @@ namespace SuperMarioForum.Controllers
                 comment.CreateDate = DateTime.Now;
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "Discussions", new { id = comment.DiscussionId });
+                return RedirectToAction("GetDiscussion", "Discussions", new { id = comment.DiscussionId });
             }
             return View(comment);
         }
+
 
     }
 }

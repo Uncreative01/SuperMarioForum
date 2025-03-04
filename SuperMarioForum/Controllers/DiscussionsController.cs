@@ -188,6 +188,26 @@ namespace SuperMarioForum.Controllers
         }
 
 
+        // GET: Discussions/GetDiscussion/5
+        public async Task<IActionResult> GetDiscussion(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var discussion = await _context.Discussion
+                .Include(d => d.Comments) // Include comments for display
+                .FirstOrDefaultAsync(m => m.DiscussionId == id);
+
+            if (discussion == null)
+            {
+                return NotFound();
+            }
+
+            return View(discussion);
+        }
+
 
 
 

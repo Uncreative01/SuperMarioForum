@@ -1,0 +1,53 @@
+﻿@model SuperMarioForum.Models.Discussion
+
+@{
+    ViewData["Title"] = "Discussion";
+}
+
+<h1>@Model.Title</h1>
+<hr />
+
+<div class="card p-4 shadow-sm">
+    <div class="card-body">
+        <p>@Model.Content</p>
+        <dt class="fw-bold">Created On:</dt>
+        <dd>@Model.CreateDate.ToString("g")</dd>
+
+        @if (!string.IsNullOrEmpty(Model.ImageFilename))
+        {
+            <img src="~/images/@Model.ImageFilename" alt="Discussion Image" class="img-fluid rounded" style="max-width: 300px; height: auto;" />
+        }
+    </div>
+</div>
+
+<hr />
+
+<!-- Comments Section -->
+<h2>Comments</h2>
+<div class="card p-4 shadow-sm">
+    <div class="card-body">
+        @if (Model.Comments != null && Model.Comments.Any())
+        {
+            <ul class="list-group">
+                @foreach (var comment in Model.Comments)
+                {
+                    <li class="list-group-item">
+                        <p class="fw-bold mb-1">Commented on @comment.CreateDate.ToString("g")</p>
+                        <p>@comment.Content</p>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No comments yet.</p>
+        }
+    </div>
+</div>
+
+<!-- Button to Navigate to the Comment Creation Page -->
+<a asp-controller="Comments" asp-action="Create" asp-route-discussionId="@Model.DiscussionId" class="btn btn-success mt-3">
+    Add a Comment
+</a>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

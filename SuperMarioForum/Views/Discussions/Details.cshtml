@@ -36,35 +36,3 @@
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </div>
 </div>
-
-<hr />
-
-<!-- Comments Section -->
-<h2>Comments</h2>
-<div class="card p-4 shadow-sm">
-    <div class="card-body">
-        @if (Model.Comments != null && Model.Comments.Any())
-        {
-            <ul class="list-group">
-                @foreach (var comment in Model.Comments)
-                {
-                    <li class="list-group-item">
-                        <p class="fw-bold mb-1">Commented on @comment.CreateDate.ToString("g")</p>
-                        <p>@comment.Content</p>
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p>No comments yet.</p>
-        }
-
-        <hr />
-
-        <!-- Replace Inline Form with Button -->
-        <a asp-controller="Comments" asp-action="Create" asp-route-discussionId="@Model.DiscussionId" class="btn btn-success">
-            Add a Comment
-        </a>
-    </div>
-</div>
