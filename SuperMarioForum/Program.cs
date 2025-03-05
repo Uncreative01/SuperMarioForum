@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SuperMarioForum.Data;
+using Microsoft.AspNetCore.Identity;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SuperMarioForumContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SuperMarioForumContext") ?? throw new InvalidOperationException("Connection string 'SuperMarioForumContext' not found.")));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<SuperMarioForumContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -31,4 +34,5 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
+app.MapRazorPages().WithStaticAssets();
 app.Run();
