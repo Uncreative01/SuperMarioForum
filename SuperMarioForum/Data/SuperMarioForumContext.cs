@@ -8,7 +8,7 @@ using SuperMarioForum.Models;
 
 namespace SuperMarioForum.Data
 {
-    public class SuperMarioForumContext : IdentityDbContext
+    public class SuperMarioForumContext : IdentityDbContext<ApplicationUser>
     {
         public SuperMarioForumContext (DbContextOptions<SuperMarioForumContext> options)
             : base(options)
