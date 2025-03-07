@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -63,6 +64,9 @@ namespace SuperMarioForum.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Set the ApplicationUserId to the logged-in user's ID
+                discussion.ApplicationUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);  // Get the logged-in user's ID
+
                 if (imageFile != null && imageFile.Length > 0)
                 {
                     var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SuperMarioForum.Data;
 using SuperMarioForum.Models;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SuperMarioForum.Controllers
@@ -35,8 +36,9 @@ namespace SuperMarioForum.Controllers
             if (ModelState.IsValid)
             {
                 comment.CreateDate = DateTime.Now;
-                // Here, you can also assign the UserId to the comment
-                comment.ApplicationUserId = User.Identity.Name; // Assuming you have ApplicationUserId as a string property in your Comment model
+
+                // Set the ApplicationUserId to the logged-in user's ID
+                comment.ApplicationUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);  // Get the logged-in user's ID
 
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
