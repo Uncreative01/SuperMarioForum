@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using SuperMarioForum.Models;
 
 namespace SuperMarioForum.Controllers
 {
-
+    [Authorize]  // Restrict all actions in this controller to authenticated users
     public class DiscussionsController : Controller
     {
         private readonly SuperMarioForumContext _context;
@@ -48,6 +49,7 @@ namespace SuperMarioForum.Controllers
         }
 
         // GET: Discussions/Create
+        [Authorize]  // Ensure only authenticated users can access the create page
         public IActionResult Create()
         {
             return View();
@@ -56,6 +58,7 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]  // Ensure only authenticated users can post a new discussion
         public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content")] Discussion discussion, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
@@ -83,6 +86,7 @@ namespace SuperMarioForum.Controllers
         }
 
         // GET: Discussions/Edit/5
+        [Authorize]  // Ensure only authenticated users can access the edit page
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -101,6 +105,7 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]  // Ensure only authenticated users can edit the discussion
         public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,CreateDate")] Discussion discussion, IFormFile? imageFile)
         {
             if (id != discussion.DiscussionId)
@@ -121,9 +126,6 @@ namespace SuperMarioForum.Controllers
                     return NotFound();
                 }
 
-                Console.WriteLine($"Editing Discussion ID: {id}");
-                Console.WriteLine($"Current Image: {existingDiscussion.ImageFilename}");
-
                 var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
                 if (!Directory.Exists(uploadDir))
                 {
@@ -133,18 +135,13 @@ namespace SuperMarioForum.Controllers
                 // Check if a new image was uploaded
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    Console.WriteLine("New image uploaded");
-
-                    // Generate a unique filename for the new image
                     var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
                     var newImagePath = Path.Combine(uploadDir, uniqueFileName);
 
-                    // Save the new image
                     using (var stream = new FileStream(newImagePath, FileMode.Create))
                     {
                         await imageFile.CopyToAsync(stream);
                     }
-                    Console.WriteLine($"New Image Saved: {newImagePath}");
 
                     // Delete the old image *after* the new one is saved
                     if (!string.IsNullOrEmpty(existingDiscussion.ImageFilename))
@@ -153,41 +150,27 @@ namespace SuperMarioForum.Controllers
                         if (System.IO.File.Exists(oldImagePath))
                         {
                             System.IO.File.Delete(oldImagePath);
-                            Console.WriteLine($"Old Image Deleted: {oldImagePath}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Old Image Not Found, skipping deletion");
                         }
                     }
 
-                    // Update the discussion with the new image filename
                     existingDiscussion.ImageFilename = uniqueFileName;
                 }
-                else
-                {
-                    Console.WriteLine("No new image uploaded, keeping the old one.");
-                }
 
-                // Update other discussion properties
                 existingDiscussion.Title = discussion.Title;
                 existingDiscussion.Content = discussion.Content;
                 existingDiscussion.CreateDate = discussion.CreateDate;
 
                 _context.Update(existingDiscussion);
                 await _context.SaveChangesAsync();
-                Console.WriteLine("Discussion updated successfully!");
 
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error saving changes: " + ex.Message);
                 ModelState.AddModelError("", "Error saving changes: " + ex.Message);
                 return View(discussion);
             }
         }
-
 
         // GET: Discussions/GetDiscussion/5
         public async Task<IActionResult> GetDiscussion(int? id)
@@ -209,11 +192,8 @@ namespace SuperMarioForum.Controllers
             return View(discussion);
         }
 
-
-
-
-
         // GET: Discussions/Delete/5
+        [Authorize]  // Ensure only authenticated users can access the delete page
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -234,6 +214,7 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]  // Ensure only authenticated users can delete a discussion
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var discussion = await _context.Discussion.FindAsync(id);
