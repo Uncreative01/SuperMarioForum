@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SuperMarioForumContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SuperMarioForumContext") ?? throw new InvalidOperationException("Connection string 'SuperMarioForumContext' not found.")));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<SuperMarioForumContext>();
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<SuperMarioForumContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
