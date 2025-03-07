@@ -1,10 +1,10 @@
-﻿using SuperMarioForum.Models;
+﻿using SuperMarioForum.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SuperMarioForum.Models
-
 {
     public class Discussion
     {
@@ -22,6 +22,13 @@ namespace SuperMarioForum.Models
 
         [DataType(DataType.DateTime)]
         public DateTime CreateDate { get; set; } = DateTime.Now;
+
+        // Foreign Key for ApplicationUser
+        [ForeignKey("ApplicationUser")]
+        public string? ApplicationUserId { get; set; }
+
+        // Navigation Property (nullable)
+        public virtual ApplicationUser? ApplicationUser { get; set; }
 
         // Navigation Property - One discussion can have many comments
         public ICollection<Comment>? Comments { get; set; }

@@ -11,6 +11,7 @@ using SuperMarioForum.Models;
 
 namespace SuperMarioForum.Controllers
 {
+
     public class DiscussionsController : Controller
     {
         private readonly SuperMarioForumContext _context;

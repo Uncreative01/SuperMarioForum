@@ -45,7 +45,7 @@ namespace SuperMarioForum.Migrations
                         column: x => x.DiscussionId,
                         principalTable: "Discussion",
                         principalColumn: "DiscussionId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(
