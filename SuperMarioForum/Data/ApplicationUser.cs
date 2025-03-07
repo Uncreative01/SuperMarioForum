@@ -8,7 +8,7 @@ namespace SuperMarioForum.Data
     {
         public string Name { get; set; }
         public string Location { get; set; }
-        public string ImageFilename { get; set; }
+        public string ImageFilename { get; set; } = "default.jpg"; // Default value
 
         // Mark this property as not mapped to the database
         [NotMapped]
