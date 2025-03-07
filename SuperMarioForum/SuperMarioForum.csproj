@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Backup\**" />
+    <Content Remove="wwwroot\Backup\**" />
+    <EmbeddedResource Remove="wwwroot\Backup\**" />
+    <None Remove="wwwroot\Backup\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
@@ -20,7 +27,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
-    <Folder Include="wwwroot\Backup\" />
+    <Folder Include="wwwroot\Extra\" />
   </ItemGroup>
 
 </Project>

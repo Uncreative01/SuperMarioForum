@@ -50,7 +50,6 @@ namespace SuperMarioForum.Controllers
         }
 
         // GET: Discussions/Create
-        [Authorize]  // Ensure only authenticated users can access the create page
         public IActionResult Create()
         {
             return View();
@@ -59,7 +58,6 @@ namespace SuperMarioForum.Controllers
         // POST: Discussions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]  // Ensure only authenticated users can post a new discussion
         public async Task<IActionResult> Create([Bind("DiscussionId,Title,Content")] Discussion discussion, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
@@ -90,7 +88,6 @@ namespace SuperMarioForum.Controllers
         }
 
         // GET: Discussions/Edit/5
-        [Authorize]  // Ensure only authenticated users can access the edit page
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -103,13 +100,19 @@ namespace SuperMarioForum.Controllers
             {
                 return NotFound();
             }
+
+            // Ensure that the logged-in user is the owner of the discussion
+            if (discussion.ApplicationUserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return Forbid();  // Return 403 Forbidden if the user is not the owner
+            }
+
             return View(discussion);
         }
 
         // POST: Discussions/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]  // Ensure only authenticated users can edit the discussion
         public async Task<IActionResult> Edit(int id, [Bind("DiscussionId,Title,Content,CreateDate")] Discussion discussion, IFormFile? imageFile)
         {
             if (id != discussion.DiscussionId)
@@ -117,63 +120,68 @@ namespace SuperMarioForum.Controllers
                 return NotFound();
             }
 
-            if (!ModelState.IsValid)
+            var existingDiscussion = await _context.Discussion.FindAsync(id);
+            if (existingDiscussion == null)
             {
-                return View(discussion);
+                return NotFound();
             }
 
-            try
+            // Ensure that the logged-in user is the owner of the discussion
+            if (existingDiscussion.ApplicationUserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
-                var existingDiscussion = await _context.Discussion.FindAsync(id);
-                if (existingDiscussion == null)
-                {
-                    return NotFound();
-                }
+                return Forbid();  // Return 403 Forbidden if the user is not the owner
+            }
 
-                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
-                if (!Directory.Exists(uploadDir))
+            if (ModelState.IsValid)
+            {
+                try
                 {
-                    Directory.CreateDirectory(uploadDir);
-                }
-
-                // Check if a new image was uploaded
-                if (imageFile != null && imageFile.Length > 0)
-                {
-                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-                    var newImagePath = Path.Combine(uploadDir, uniqueFileName);
-
-                    using (var stream = new FileStream(newImagePath, FileMode.Create))
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+                    if (!Directory.Exists(uploadDir))
                     {
-                        await imageFile.CopyToAsync(stream);
+                        Directory.CreateDirectory(uploadDir);
                     }
 
-                    // Delete the old image *after* the new one is saved
-                    if (!string.IsNullOrEmpty(existingDiscussion.ImageFilename))
+                    // Check if a new image was uploaded
+                    if (imageFile != null && imageFile.Length > 0)
                     {
-                        var oldImagePath = Path.Combine(uploadDir, existingDiscussion.ImageFilename);
-                        if (System.IO.File.Exists(oldImagePath))
+                        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var newImagePath = Path.Combine(uploadDir, uniqueFileName);
+
+                        using (var stream = new FileStream(newImagePath, FileMode.Create))
                         {
-                            System.IO.File.Delete(oldImagePath);
+                            await imageFile.CopyToAsync(stream);
                         }
+
+                        // Delete the old image *after* the new one is saved
+                        if (!string.IsNullOrEmpty(existingDiscussion.ImageFilename))
+                        {
+                            var oldImagePath = Path.Combine(uploadDir, existingDiscussion.ImageFilename);
+                            if (System.IO.File.Exists(oldImagePath))
+                            {
+                                System.IO.File.Delete(oldImagePath);
+                            }
+                        }
+
+                        existingDiscussion.ImageFilename = uniqueFileName;
                     }
 
-                    existingDiscussion.ImageFilename = uniqueFileName;
+                    existingDiscussion.Title = discussion.Title;
+                    existingDiscussion.Content = discussion.Content;
+                    existingDiscussion.CreateDate = discussion.CreateDate;
+
+                    _context.Update(existingDiscussion);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index));
                 }
-
-                existingDiscussion.Title = discussion.Title;
-                existingDiscussion.Content = discussion.Content;
-                existingDiscussion.CreateDate = discussion.CreateDate;
-
-                _context.Update(existingDiscussion);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Error saving changes: " + ex.Message);
+                    return View(discussion);
+                }
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Error saving changes: " + ex.Message);
-                return View(discussion);
-            }
+            return View(discussion);
         }
 
         // GET: Discussions/GetDiscussion/5
@@ -197,7 +205,6 @@ namespace SuperMarioForum.Controllers
         }
 
         // GET: Discussions/Delete/5
-        [Authorize]  // Ensure only authenticated users can access the delete page
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -212,13 +219,18 @@ namespace SuperMarioForum.Controllers
                 return NotFound();
             }
 
+            // Ensure that the logged-in user is the owner of the discussion
+            if (discussion.ApplicationUserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return Forbid();  // Return 403 Forbidden if the user is not the owner
+            }
+
             return View(discussion);
         }
 
         // POST: Discussions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize]  // Ensure only authenticated users can delete a discussion
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var discussion = await _context.Discussion.FindAsync(id);
