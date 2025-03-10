@@ -51,8 +51,22 @@
             <!-- Profile Image Upload Field -->
             <div class="form-floating mb-3">
                 <input asp-for="Input.ImageFile" type="file" class="form-control" />
-                <label asp-for="Input.ImageFile">Profile Image</label>
+                <label asp-for="Input.ImageFile">Profile Image (optional)</label>
                 <span asp-validation-for="Input.ImageFile" class="text-danger"></span>
+            </div>
+
+            <!-- Display Profile Image (or placeholder if no image is selected) -->
+            <div class="mb-3">
+                @if (Model.Input.ImageFile == null)
+                {
+                    <!-- Display placeholder image -->
+                    <img src="~/images/default.png" alt="Profile Image" class="img-thumbnail" />
+                }
+                else
+                {
+                    <!-- Display uploaded image -->
+                    <img src="~/images/@Model.Input.ImageFile.FileName" alt="Profile Image" class="img-thumbnail" />
+                }
             </div>
 
             <!-- Submit Button -->
@@ -64,31 +78,29 @@
         <section>
             <h3>Use another service to register.</h3>
             <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
+            @if ((Model.ExternalLogins?.Count ?? 0) == 0)
+            {
+                <div>
+                    <p>
+                        There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                            article
+                            about setting up this ASP.NET application to support logging in via external services
+                        </a>.<br />
+                    </p>
+                </div>
+            }
+            else
+            {
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
                     <div>
                         <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
-                                article
-                                about setting up this ASP.NET application to support logging in via external services
-                            </a>.
+                            @foreach (var provider in Model.ExternalLogins!)
+                            {
+                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                            }
                         </p>
                     </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
+                </form>
             }
         </section>
     </div>

@@ -73,14 +73,18 @@ namespace SuperMarioForum.Areas.Identity.Pages.Account
             [Display(Name = "Location")]
             public string Location { get; set; }
 
-            // For file uploads, add ImageFile property (this is not mapped to the database)
+            // The ImageFile is now optional
             [Display(Name = "Profile Image")]
-            public IFormFile ImageFile { get; set; }
+            public IFormFile? ImageFile { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl ?? Url.Content("~/");
+
+            // Ensure the Input model is initialized before being accessed in the view.
+            Input = new InputModel();
+
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
@@ -88,15 +92,22 @@ namespace SuperMarioForum.Areas.Identity.Pages.Account
         {
             if (ModelState.IsValid)
             {
+                // Custom validation: Check if the uploaded image is valid if present
+                if (Input.ImageFile != null && !IsValidImage(Input.ImageFile))
+                {
+                    ModelState.AddModelError("Input.ImageFile", "Invalid image file.");
+                    return Page();
+                }
+
                 // Create a new ApplicationUser
                 var user = new ApplicationUser
                 {
                     UserName = Input.Email,
                     Email = Input.Email,
-                    Name = Input.Name,          // Set custom Name
-                    Location = Input.Location,  // Set custom Location
-                                                // Handle the ImageFilename - Save the uploaded file if any, or set a default value
-                    ImageFilename = Input.ImageFile != null ? SaveImageFile(Input.ImageFile) : "default.jpg"
+                    Name = Input.Name,
+                    Location = Input.Location,
+                    // Handle the ImageFilename - Save the uploaded file if any, or set a default value
+                    ImageFilename = Input.ImageFile != null ? SaveImageFile(Input.ImageFile) : "default.png"
                 };
 
                 // Set the username and email
@@ -145,6 +156,16 @@ namespace SuperMarioForum.Areas.Identity.Pages.Account
             return Page();
         }
 
+        // Add the IsValidImage method to validate the uploaded file.
+        private bool IsValidImage(IFormFile file)
+        {
+            if (file == null) return true; // If no file is uploaded, it's considered valid (optional image)
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            return allowedExtensions.Contains(extension);
+        }
+
         private string SaveImageFile(IFormFile imageFile)
         {
             // Logic to save the image file to a server folder and return the saved file name
@@ -155,7 +176,6 @@ namespace SuperMarioForum.Areas.Identity.Pages.Account
             }
             return imageFile.FileName;
         }
-
 
         private ApplicationUser CreateUser()
         {

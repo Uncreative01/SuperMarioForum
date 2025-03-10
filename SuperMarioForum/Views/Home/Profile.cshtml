@@ -12,14 +12,7 @@
         <p><strong>Name:</strong> @Model.Name</p>
         <p><strong>Location:</strong> @Model.Location</p>
 
-        @if (!string.IsNullOrEmpty(Model.ImageFilename))
-        {
-            <img src="~/images/@Model.ImageFilename" alt="Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px;" />
-        }
-        else
-        {
-            <img src="~/images/default.jpg" alt="Default Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px;" />
-        }
+        <img src="~/images/@Model.ImageFilename" alt="Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px;" />
     </div>
 </div>
 
