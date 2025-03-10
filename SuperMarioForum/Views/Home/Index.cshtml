@@ -28,6 +28,19 @@
                                 </a>
                             </h5>
                             <p class="card-text"><small class="text-muted">@discussion.CreateDate.ToString("g")</small></p>
+                            <p class="card-text">
+                                <strong>Created by: </strong>
+                                @if (discussion.ApplicationUser != null)
+                                {
+                                    <a href="@Url.Action("Profile", "Account", new { userId = discussion.ApplicationUser.Id })">
+                                        @discussion.ApplicationUser.UserName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span>Unknown</span>
+                                }
+                            </p>
                             <p class="card-text"><strong>Comments: </strong>@(discussion.Comments?.Count ?? 0)</p>
                         </div>
                     </div>

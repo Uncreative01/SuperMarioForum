@@ -22,6 +22,21 @@
 
 <hr />
 
+<!-- Owner Information -->
+<div class="owner-info">
+    <h3>
+        Owner: <a href="@Url.Action("Profile", "Account", new { id = Model.ApplicationUserId })">
+            @Model.ApplicationUser.Name
+        </a>
+    </h3>
+    @if (!string.IsNullOrEmpty(Model.ApplicationUser.ImageFilename))
+    {
+        <img src="~/images/@Model.ApplicationUser.ImageFilename" alt="Owner's Profile Picture" class="img-thumbnail" style="width: 50px; height: 50px;" />
+    }
+</div>
+
+<hr />
+
 <!-- Comments Section -->
 <h2>Comments</h2>
 <div class="card p-4 shadow-sm">
@@ -32,7 +47,13 @@
                 @foreach (var comment in Model.Comments)
                 {
                     <li class="list-group-item">
-                        <p class="fw-bold mb-1">Commented on @comment.CreateDate.ToString("g")</p>
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(comment.ApplicationUser?.ImageFilename))
+                            {
+                                <img src="~/images/@comment.ApplicationUser.ImageFilename" alt="Commenter's Profile Picture" class="img-thumbnail" style="width: 30px; height: 30px;" />
+                            }
+                            <p class="fw-bold mb-1 ms-2">@comment.ApplicationUser.Name commented on @comment.CreateDate.ToString("g")</p>
+                        </div>
                         <p>@comment.Content</p>
                     </li>
                 }
@@ -51,4 +72,3 @@
 </a>
 
 <a asp-controller="Home" asp-action="Index" class="btn btn-secondary mt-3">Back to Home</a>
-

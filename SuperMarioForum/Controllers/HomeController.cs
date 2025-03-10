@@ -20,9 +20,10 @@ namespace SuperMarioForum.Controllers
         public async Task<IActionResult> Index()
         {
             var discussions = await _context.Discussion
-                .Include(d => d.Comments) // Include comments to count them
-                .OrderByDescending(d => d.CreateDate)
-                .ToListAsync();
+        .Include(d => d.ApplicationUser)  // Include the ApplicationUser to get the owner's name
+        .Include(d => d.Comments)        // Include comments to count them
+        .OrderByDescending(d => d.CreateDate)
+        .ToListAsync();
 
             return View(discussions);
         }
