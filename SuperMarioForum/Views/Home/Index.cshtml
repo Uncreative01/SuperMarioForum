@@ -32,7 +32,7 @@
                                 <strong>Created by: </strong>
                                 @if (discussion.ApplicationUser != null)
                                 {
-                                    <a href="@Url.Action("Profile", "Account", new { userId = discussion.ApplicationUser.Id })">
+                                    <a href="@Url.Action("Profile", "Home", new { userId = discussion.ApplicationUser.Id })">
                                         @discussion.ApplicationUser.UserName
                                     </a>
                                 }

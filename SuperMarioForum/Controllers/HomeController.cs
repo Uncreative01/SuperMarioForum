@@ -42,5 +42,30 @@ namespace SuperMarioForum.Controllers
 
             return View(discussion);
         }
+
+        // GET: Home/Profile?userId=5
+        // Define the route directly in the action, avoiding ambiguity
+        [HttpGet("Home/Profile/{userId}")]
+        public async Task<IActionResult> Profile(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            // Retrieve the user with the specified userId
+            var user = await _context.Users
+                .Include(u => u.Discussions)  // Optionally include discussions or other data
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
     }
 }
+
+

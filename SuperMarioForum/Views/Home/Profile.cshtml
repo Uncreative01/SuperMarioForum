@@ -1,0 +1,47 @@
+﻿@model SuperMarioForum.Data.ApplicationUser
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<h1>@Model.Name's Profile</h1>
+
+<div class="card p-4 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title">User Details</h5>
+        <p><strong>Name:</strong> @Model.Name</p>
+        <p><strong>Location:</strong> @Model.Location</p>
+
+        @if (!string.IsNullOrEmpty(Model.ImageFilename))
+        {
+            <img src="~/images/@Model.ImageFilename" alt="Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px;" />
+        }
+        else
+        {
+            <img src="~/images/default.jpg" alt="Default Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px;" />
+        }
+    </div>
+</div>
+
+<hr />
+
+<h3>My Discussions</h3>
+@if (Model.Discussions != null && Model.Discussions.Any())
+{
+    <ul class="list-group">
+        @foreach (var discussion in Model.Discussions)
+        {
+            <li class="list-group-item">
+                <a asp-controller="Discussions" asp-action="GetDiscussion" asp-route-id="@discussion.DiscussionId">
+                    @discussion.Title
+                </a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No discussions found.</p>
+}
+
+<a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Back to Home</a>
